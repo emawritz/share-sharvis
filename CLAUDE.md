@@ -59,6 +59,33 @@ All machine config lives in `~/.config/jarvis/config.toml` (never hardcoded).
 - **Svelte 5 runes**: Use `$state`, `$derived`, `$effect`, `$props` (NOT `$:` or `export let`).
 - **Tauri errors**: Come as plain strings, not Error objects.
 
+## Claude Code Configuration
+
+This repo ships with a full `.claude/` configuration:
+
+```
+.claude/
+├── agents/             # 13 specialized agent definitions
+│   ├── architect.md
+│   ├── build-error-resolver.md
+│   ├── code-reviewer.md
+│   ├── doc-updater.md
+│   ├── e2e-runner.md
+│   ├── performance-optimizer.md
+│   ├── planner.md
+│   ├── refactor-cleaner.md
+│   ├── rust-build-resolver.md
+│   ├── rust-reviewer.md
+│   ├── security-reviewer.md
+│   ├── tdd-guide.md
+│   └── typescript-reviewer.md
+└── rules/              # Development standards
+    ├── common/         # 10 language-agnostic rules
+    └── typescript/     # 5 TypeScript/Svelte-specific rules
+```
+
+Agents are auto-discovered by Claude Code. Rules are loaded as context for every session. See `.claude/rules/README.md` for details.
+
 ## Do NOT
 
 - Hardcode machine names, paths, or SSH hosts — use config

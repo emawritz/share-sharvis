@@ -146,11 +146,54 @@ src/lib/                Svelte 5 frontend
 
 ### How It Works
 
-1. **Config** → You define your machines and repos in `config.toml`
-2. **Registry** → JARVIS loads the machine registry and starts health checks
-3. **Monitor** → Background threads parse Claude Code JSONL session files for activity
-4. **Dispatch** → Send tasks via local shell or SSH to any registered machine
-5. **Dashboard** → Everything surfaces in a single Svelte 5 UI with real-time updates
+```mermaid
+flowchart TB
+    subgraph SETUP["🚀 First Launch"]
+        W1[Setup Wizard] --> W2[Detect Local Machine]
+        W2 --> W3[Add Remote Machines]
+        W3 --> W4[Test SSH Connections]
+        W4 --> W5[Save config.toml]
+    end
+
+    subgraph CORE["⚙️ Runtime"]
+        CFG[~/.config/jarvis/config.toml] -->|load| REG[Machine Registry]
+        REG -->|spawn| HC[Health Checks]
+        REG -->|spawn| SM[Session Monitor]
+        SM -->|parse| JSONL[Claude JSONL Files]
+    end
+
+    subgraph MACHINES["🖥️ Machines"]
+        LOCAL[Local Machine\nshell exec]
+        REMOTE1[Remote Machine 1\nSSH + Tailscale]
+        REMOTE2[Remote Machine 2\nSSH + Tailscale]
+    end
+
+    subgraph UI["🎨 Dashboard · Svelte 5"]
+        TABS[Tabs: Tasks · Machines · Commits · GitHub · Pipelines · Timeline]
+        CMD[Command Bar]
+        AGENT[Agent Activity Feed]
+    end
+
+    W5 -->|generates| CFG
+    HC -->|status| UI
+    SM -->|activity stream| AGENT
+    CMD -->|dispatch task| REG
+    REG -->|host = local| LOCAL
+    REG -->|host = ssh-alias| REMOTE1
+    REG -->|host = ssh-alias| REMOTE2
+    LOCAL -->|stdout/stderr| UI
+    REMOTE1 -->|stdout/stderr| UI
+    REMOTE2 -->|stdout/stderr| UI
+```
+
+**Flow summary:**
+
+1. **Setup Wizard** auto-detects your local machine and lets you add remotes via SSH
+2. **Config** is saved to `~/.config/jarvis/config.toml` — fully dynamic, never hardcoded
+3. **Machine Registry** loads config, spawns health checks and session monitors
+4. **Session Monitor** parses Claude Code JSONL files for real-time agent activity
+5. **Task Dispatch** routes commands to local shell or remote machines via SSH/Tailscale
+6. **Dashboard** surfaces everything in a unified Svelte 5 UI with live updates
 
 ---
 

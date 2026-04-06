@@ -212,21 +212,21 @@ mod tests {
     // next_id: empty slice → 1
     #[test]
     fn next_id_empty_returns_one() {
-        let msgs: Vec<AgentMessage> = vec![];
+        let msgs: Vec<AgentMessage> = Vec::new();
         assert_eq!(next_id(&msgs), 1);
     }
 
     // next_id: returns max id + 1
     #[test]
     fn next_id_returns_max_plus_one() {
-        let msgs = vec![make_msg(3, "info"), make_msg(7, "info"), make_msg(2, "info")];
+        let msgs = [make_msg(3, "info"), make_msg(7, "info"), make_msg(2, "info")];
         assert_eq!(next_id(&msgs), 8);
     }
 
     // next_id: single message
     #[test]
     fn next_id_single_message() {
-        let msgs = vec![make_msg(42, "info")];
+        let msgs = [make_msg(42, "info")];
         assert_eq!(next_id(&msgs), 43);
     }
 
@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn search_filters_by_content_case_insensitive() {
         // Build a local list and apply the same filter logic used by search_team_memories.
-        let msgs = vec![
+        let msgs = [
             make_memory(1, "Use PostgreSQL for the main DB", Some("architecture"), false),
             make_memory(2, "Redis for caching", Some("architecture"), false),
             make_memory(3, "TODO: write tests", Some("todo"), false),
@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn search_filters_by_category() {
-        let msgs = vec![
+        let msgs = [
             make_memory(1, "arch decision", Some("architecture"), false),
             make_memory(2, "todo item", Some("todo"), false),
             make_memory(3, "another arch note", Some("architecture"), false),
@@ -353,7 +353,7 @@ mod tests {
 
     #[test]
     fn get_memory_categories_deduplication() {
-        let msgs = vec![
+        let msgs = [
             make_memory(1, "a", Some("architecture"), false),
             make_memory(2, "b", Some("todo"), false),
             make_memory(3, "c", Some("architecture"), false),
@@ -372,7 +372,7 @@ mod tests {
 
     #[test]
     fn pinned_memories_sort_before_unpinned() {
-        let msgs = vec![
+        let msgs = [
             make_memory(1, "regular", None, false),
             make_memory(2, "pinned", None, true),
             make_memory(3, "also regular", None, false),

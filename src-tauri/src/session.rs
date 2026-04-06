@@ -717,7 +717,7 @@ pub fn get_recent_prompts(
     limit: usize,
     registry: tauri::State<'_, MachineRegistry>,
 ) -> Vec<String> {
-    let limit = limit.min(200).max(1);
+    let limit = limit.clamp(1, 200);
 
     let local_dirs: Vec<String> = {
         let machines = registry.machines.lock().unwrap_or_else(|e| e.into_inner());
@@ -804,7 +804,7 @@ pub fn get_activity_heatmap(
 ) -> Vec<serde_json::Value> {
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    let days = days.min(365).max(1);
+    let days = days.clamp(1, 365);
 
     let local_dirs: Vec<String> = {
         let machines = registry.machines.lock().unwrap_or_else(|e| e.into_inner());
@@ -887,12 +887,12 @@ pub fn get_activity_heatmap(
 
     // Flatten into a Vec<Value>
     let mut result = Vec::with_capacity(7 * 24);
-    for dow in 0..7usize {
-        for hour in 0..24usize {
+    for (dow, day_row) in heatmap.iter().enumerate() {
+        for (hour, count) in day_row.iter().enumerate() {
             result.push(serde_json::json!({
                 "hour": hour,
                 "day_of_week": dow,
-                "count": heatmap[dow][hour],
+                "count": count,
             }));
         }
     }
@@ -936,8 +936,8 @@ pub fn parse_iso8601_to_secs(ts: &str) -> Option<u64> {
     let month_days: [u64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     let is_leap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
     let mut days_in_months: u64 = 0;
-    for i in 0..(m as usize - 1) {
-        days_in_months += month_days[i];
+    for (i, &days) in month_days.iter().enumerate().take(m as usize - 1) {
+        days_in_months += days;
         if i == 1 && is_leap {
             days_in_months += 1;
         }

@@ -173,7 +173,6 @@ fn write_json_file(path: &PathBuf, val: &serde_json::Value) -> Result<(), String
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
 
     #[test]
     fn test_list_backups_missing_dir_returns_empty() {

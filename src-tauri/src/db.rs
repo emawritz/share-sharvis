@@ -604,6 +604,65 @@ fn migrate_crons_json(conn: &Connection) {
     }
 }
 
+fn migrate_task_history_json(conn: &Connection) {
+    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/tmp"));
+    let path = home.join(".config/jarvis/task-history.json");
+    if json_is_empty(&path) {
+        return;
+    }
+
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM task_history", [], |r| r.get(0))
+        .unwrap_or(0);
+    if count > 0 {
+        let _ = std::fs::rename(&path, path.with_extension("json.bak"));
+        return;
+    }
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct OldEntry {
+        id: u64,
+        target: String,
+        prompt: String,
+        output: String,
+        status: String,
+        duration_secs: u64,
+    }
+
+    if let Ok(data) = std::fs::read_to_string(&path) {
+        if let Ok(entries) = serde_json::from_str::<Vec<OldEntry>>(&data) {
+            let now_secs = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs() as i64;
+            for entry in &entries {
+                let success = entry.status == "success";
+                let output_trimmed: String = entry.output.chars().take(5000).collect();
+                let _ = conn.execute(
+                    "INSERT INTO task_history (task_id, target, prompt, status, output, duration_secs, completed_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    params![
+                        entry.id as i64,
+                        entry.target,
+                        entry.prompt,
+                        entry.status,
+                        output_trimmed,
+                        entry.duration_secs as f64,
+                        now_secs,
+                    ],
+                );
+                let _ = success; // suppress unused warning
+            }
+            log::info!(
+                "Migrated {} task history entries from task-history.json to SQLite",
+                entries.len()
+            );
+            let _ = std::fs::rename(&path, path.with_extension("json.bak"));
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Unit tests (in-memory SQLite)
 // ---------------------------------------------------------------------------
@@ -706,64 +765,5 @@ mod tests {
             .unwrap_or(4096);
         assert!(page_count > 0, "page_count should be positive");
         assert!(page_size >= 512, "page_size should be at least 512 bytes");
-    }
-}
-
-fn migrate_task_history_json(conn: &Connection) {
-    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/tmp"));
-    let path = home.join(".config/jarvis/task-history.json");
-    if json_is_empty(&path) {
-        return;
-    }
-
-    let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM task_history", [], |r| r.get(0))
-        .unwrap_or(0);
-    if count > 0 {
-        let _ = std::fs::rename(&path, path.with_extension("json.bak"));
-        return;
-    }
-
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct OldEntry {
-        id: u64,
-        target: String,
-        prompt: String,
-        output: String,
-        status: String,
-        duration_secs: u64,
-    }
-
-    if let Ok(data) = std::fs::read_to_string(&path) {
-        if let Ok(entries) = serde_json::from_str::<Vec<OldEntry>>(&data) {
-            let now_secs = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs() as i64;
-            for entry in &entries {
-                let success = entry.status == "success";
-                let output_trimmed: String = entry.output.chars().take(5000).collect();
-                let _ = conn.execute(
-                    "INSERT INTO task_history (task_id, target, prompt, status, output, duration_secs, completed_at)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                    params![
-                        entry.id as i64,
-                        entry.target,
-                        entry.prompt,
-                        entry.status,
-                        output_trimmed,
-                        entry.duration_secs as f64,
-                        now_secs,
-                    ],
-                );
-                let _ = success; // suppress unused warning
-            }
-            log::info!(
-                "Migrated {} task history entries from task-history.json to SQLite",
-                entries.len()
-            );
-            let _ = std::fs::rename(&path, path.with_extension("json.bak"));
-        }
     }
 }

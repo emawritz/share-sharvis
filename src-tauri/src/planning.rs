@@ -17,18 +17,13 @@ use crate::types::{shell_escape, Activity, Machine, PlanStep, PlanningHistoryEnt
 // ---------------------------------------------------------------------------
 
 /// Per-session planning configuration (supplied by the caller at session start).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct PlanningConfig {
     /// Optional custom timeout in seconds for Claude invocations.
     /// Falls back to `PLANNING_TIMEOUT_SECS` when `None`.
     pub timeout_secs: Option<u64>,
 }
 
-impl Default for PlanningConfig {
-    fn default() -> Self {
-        Self { timeout_secs: None }
-    }
-}
 
 pub struct PlanningStore {
     pub session: Mutex<Option<PlanningState>>,

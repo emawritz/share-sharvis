@@ -1274,7 +1274,7 @@ pub async fn get_machine_logs(
     if machine_id.is_empty() {
         return Err("machine_id must not be empty".into());
     }
-    let lines = lines.max(1).min(10_000); // clamp to sane range
+    let lines = lines.clamp(1, 10_000); // clamp to sane range
     let machine = {
         let machines = registry.machines.lock().unwrap_or_else(|e| e.into_inner());
         match machines.get(&machine_id) {

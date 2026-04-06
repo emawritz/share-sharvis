@@ -837,7 +837,7 @@ pub fn get_daily_stats(
     days: u32,
     registry: tauri::State<'_, MachineRegistry>,
 ) -> Vec<DailyStat> {
-    let days = days.max(1).min(365) as i64;
+    let days = days.clamp(1, 365) as i64;
     let now = chrono::Utc::now();
 
     // Collect local machine repos
@@ -936,7 +936,7 @@ pub fn get_top_tools(
     limit: usize,
     registry: tauri::State<'_, MachineRegistry>,
 ) -> Vec<ToolStat> {
-    let limit = limit.max(1).min(100);
+    let limit = limit.clamp(1, 100);
 
     let machine_repos: Vec<(String, bool, Option<String>)> = {
         let machines = registry.machines.lock().unwrap_or_else(|e| e.into_inner());
@@ -980,6 +980,7 @@ mod tests {
     use crate::types::TimelineEvent;
 
     // Helper to build a minimal TimelineEvent for test use.
+    #[allow(clippy::too_many_arguments)]
     fn make_event(
         ts: &str,
         role: &str,
@@ -1474,6 +1475,7 @@ mod tests {
     // parse_daily_stats_from_dir
     // -----------------------------------------------------------------------
 
+    #[allow(dead_code)]
     fn write_tmp_jsonl(name: &str, content: &str) -> String {
         let path = std::env::temp_dir()
             .join(name)
@@ -1581,7 +1583,7 @@ mod tests {
 
     #[test]
     fn tool_stat_sort_descending_by_calls() {
-        let mut stats = vec![
+        let mut stats = [
             ToolStat { tool_name: "Read".into(), calls: 5 },
             ToolStat { tool_name: "Bash".into(), calls: 20 },
             ToolStat { tool_name: "Edit".into(), calls: 10 },

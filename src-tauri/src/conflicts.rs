@@ -351,7 +351,7 @@ pub fn get_conflict_diff(repo_path: String, file: String) -> Result<String, Stri
 mod tests {
     use super::*;
     use std::fs;
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
     use std::process::Command;
 
     /// Create a unique temp directory under the system temp dir.

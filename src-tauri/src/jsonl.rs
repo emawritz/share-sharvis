@@ -97,7 +97,7 @@ pub fn count_entries(path: &str) -> usize {
     let reader = BufReader::new(file);
     reader
         .lines()
-        .filter_map(|l| l.ok())
+        .map_while(Result::ok)
         .filter(|l| !l.trim().is_empty())
         .count()
 }
@@ -1349,9 +1349,7 @@ mod tests {
     #[test]
     fn extract_last_activity_returns_both_tool_and_text_when_present() {
         // Build a single JSONL line that has both a tool_use and a text block
-        let line = format!(
-            r#"{{"message":{{"role":"assistant","content":[{{"type":"tool_use","name":"Write","input":{{"file_path":"/out.rs"}}}},{{"type":"text","text":"Writing now"}}]}}}}"#
-        );
+        let line = r#"{"message":{"role":"assistant","content":[{"type":"tool_use","name":"Write","input":{"file_path":"/out.rs"}},{"type":"text","text":"Writing now"}]}}"#.to_string();
         let (tool, detail, text) = extract_last_activity(&line);
         assert_eq!(tool.as_deref(), Some("Write"));
         assert_eq!(detail.as_deref(), Some("/out.rs"));

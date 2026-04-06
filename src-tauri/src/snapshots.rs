@@ -377,7 +377,7 @@ mod tests {
         dir
     }
 
-    fn write_snap(dir: &PathBuf, snap: &SessionSnapshot) {
+    fn write_snap(dir: &std::path::Path, snap: &SessionSnapshot) {
         let json = serde_json::to_string_pretty(snap).unwrap();
         fs::write(dir.join(format!("{}.json", snap.name)), json).unwrap();
     }

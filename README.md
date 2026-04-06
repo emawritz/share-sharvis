@@ -32,8 +32,8 @@ JARVIS gives you a single control panel to manage Claude Code sessions running o
 
 ```bash
 # Clone the repo
-git clone https://github.com/emawritz/share-jarvis.git
-cd share-jarvis
+git clone https://github.com/emawritz/share-sharvis.git
+cd share-sharvis
 
 # Install frontend dependencies
 npm install

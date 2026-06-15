@@ -28,13 +28,13 @@ tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 regex-lite = "0.1"
-toml = "0.8"
+toml = "1.1"
 dirs = "6"
-ureq = { version = "2", features = ["json"] }
-axum = { version = "0.7", features = ["macros"] }
+ureq = { version = "3", features = ["json"] }
+axum = { version = "0.8", features = ["macros"] }
 futures = "0.3"
-cron = "0.12"
-rusqlite = { version = "0.31", features = ["bundled"] }
+cron = "0.16"
+rusqlite = { version = "0.40", features = ["bundled"] }
 
 [profile.release]
 strip = true          # Strip debug symbols
